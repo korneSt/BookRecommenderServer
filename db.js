@@ -1,4 +1,4 @@
-var sequelize = new Sequelize('database', 'username', 'password', {
+var sequelize = new Sequelize('recommendations', 'username', 'password', {
   host: 'localhost',
   dialect: 'mysql',
 
