@@ -10,8 +10,7 @@ var users = require('./routes/users');
 var app = express();
 
 import * as recommender from './recommender';
-
-
+import * as db from './db'
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -25,12 +24,23 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Content-Type', 'application/json');
+
+  next();
+});
+
 app.use('/', index);
 app.use('/users', users);
 
 //API
+app.get('/api/v1.0/c', db.addUser);
 app.post('/api/v1.0/model', recommender.createModel);
 app.get('/api/v1.0/recommendationUser', recommender.getUserRecommendation);
+app.get('/api/v1.0/books', recommender.getBooks);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
