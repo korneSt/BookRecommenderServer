@@ -1,9 +1,8 @@
-
-
 const API_KEY = "00dd0d66d11a46baa9973eb5f6315151";
 const URL = 'https://westus.api.cognitive.microsoft.com/recommendations/v4.0/models/';
 const rp = require('request-promise');
 const modelId = 'e78d6041-6d30-44c4-855c-dc4760acab79';
+const fs = require('fs');
 
 import * as db from './db'
 
@@ -78,13 +77,21 @@ export const getItemRecommendation = (req, res) => {
 export const postUsageFile = (req, res) => {
     let options = {
         method: 'POST',
-        url: URL + modelId + '/catalog?catalogDisplayName={catalogDisplayName}',
-        qs: { userId: req.query.userId, numberOfResults: req.query.numberOfResults },
+        url: URL + modelId + '/usage',
+        qs: { usageDisplayName: req.query.usageDisplayName },
         headers:
         {
-            'ocp-apim-subscription-key': '0b4ff4feea1b469e9e1c787feac92ba1',
-            'content-type': '"application/json"'
-        }
+            'ocp-apim-subscription-key': '0b4ff4feea1b469e9e1c787feac92ba1'
+        },
+        formData: {
+            file: {
+                value: fs.createReadStream('./usage_files/usage.txt'),
+                options: {
+                    // filename: 'test.txt',
+                    // contentType: 'image/jpg'
+                }
+            }
+        },
     };
 
     rp(options).then((response) => {
