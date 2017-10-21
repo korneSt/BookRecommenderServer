@@ -39,7 +39,9 @@ app.use('/users', users);
 app.get('/api/v1.0/c', db.addUser);
 app.post('/api/v1.0/model', recommender.createModel);
 app.get('/api/v1.0/recommendationUser', recommender.getUserRecommendation);
-app.get('/api/v1.0/books', recommender.getBooks);
+app.get('/api/v1.0/recommendationItem', recommender.getItemRecommendation);
+app.get('/api/v1.0/books', db.getBooksDB);
+app.get('/api/v1.0/books/:id', db.getUserBooks);
 
 
 // catch 404 and forward to error handler

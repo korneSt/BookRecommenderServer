@@ -55,7 +55,11 @@ export const getItemRecommendation = (req, res) => {
     let options = {
         method: 'GET',
         url: URL + modelId + '/recommend/item',
-        qs: { userId: req.query.userId, numberOfResults: req.query.numberOfResults },
+        qs: { 
+            itemIds: req.query.itemIds, 
+            numberOfResults: req.query.numberOfResults, 
+            minimalScore: req.query.minimalScore,
+        },
         headers:
         {
             'ocp-apim-subscription-key': '0b4ff4feea1b469e9e1c787feac92ba1',
