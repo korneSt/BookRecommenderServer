@@ -102,6 +102,35 @@ export const postUsageFile = (req, res) => {
     });
 }
 
+export const postCatalogFile = (req, res) => {
+    let options = {
+        method: 'POST',
+        url: URL + modelId + '/catalog',
+        qs: { catalogDisplayName: req.query.catalogDisplayName },
+        headers:
+        {
+            'ocp-apim-subscription-key': '0b4ff4feea1b469e9e1c787feac92ba1'
+        },
+        formData: {
+            file: {
+                value: fs.createReadStream('./catalog_files/catalog.txt'),
+                 options: {
+                    // filename: 'test.txt',
+                    // contentType: 'image/jpg'
+                }
+            }
+        },
+    };
+
+    rp(options).then((response) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(response)
+    }).catch((err) => {
+        console.log(err);
+    });
+}
+
+
 export const getBooks = (req, res) => {
 
     let options = {
