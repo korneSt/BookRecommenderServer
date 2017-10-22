@@ -106,6 +106,37 @@ export const postCatalogFile = (req, res) => {
     let options = {
         method: 'POST',
         url: URL + modelId + '/catalog',
+         resolveWithFullResponse: true,
+        qs: { catalogDisplayName: req.query.catalogDisplayName },
+        headers:
+        {
+            'ocp-apim-subscription-key': '0b4ff4feea1b469e9e1c787feac92ba1',
+            'content-Type': 'application/octet-stream'
+        },
+        form: {},
+        formData: {
+            file: {
+                value: fs.createReadStream('./catalog_files/catalog.txt'),
+                 options: {
+                    // filename: 'test.txt',
+                    contentType: 'text/plain'
+                }
+            }
+        },
+    };
+
+    rp(options).then((response) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(response)
+    }).catch((err) => {
+        console.log(err);
+    });
+}
+
+export const updateCatalogFile = (req, res) => {
+    let options = {
+        method: 'POST',
+        url: URL + modelId + '/catalog',
         qs: { catalogDisplayName: req.query.catalogDisplayName },
         headers:
         {
@@ -129,7 +160,6 @@ export const postCatalogFile = (req, res) => {
         console.log(err);
     });
 }
-
 
 export const getBooks = (req, res) => {
 

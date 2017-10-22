@@ -44,7 +44,7 @@ app.get('/api/v1.0/books', db.getBooksDB);
 app.get('/api/v1.0/books/:id', db.getUserBooks);
 app.post('/api/v1.0/postUsageFile', recommender.postUsageFile);
 app.post('/api/v1.0/postCatalogFile', recommender.postCatalogFile);
-
+app.patch('/api/v1.0/updateCatalogFile', recommender.updateCatalogFile);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
