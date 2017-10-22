@@ -135,7 +135,7 @@ export const postCatalogFile = (req, res) => {
 
 export const updateCatalogFile = (req, res) => {
     let options = {
-        method: 'POST',
+        method: 'PATCH',
         url: URL + modelId + '/catalog',
         qs: { catalogDisplayName: req.query.catalogDisplayName },
         headers:
@@ -152,6 +152,45 @@ export const updateCatalogFile = (req, res) => {
             }
         },
     };
+
+    rp(options).then((response) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(response)
+    }).catch((err) => {
+        console.log(err);
+    });
+}
+
+export const triggerBuild = (req, res) => {
+    let options = {
+        method: 'POST',
+        url: URL + modelId + '/builds',
+        headers:
+        {
+            'ocp-apim-subscription-key': '0b4ff4feea1b469e9e1c787feac92ba1'
+        },
+        form: {
+            description: 'Simple recomendations build',
+            buildType: 'recommendation',
+            buildParameters: {
+                recommendation: {
+                    numberOfModelIterations: 10,
+                    numberOfModelDimensions: 40,
+                    itemCutOffLowerBound: 1,
+                    itemCutOffUpperBound: 10,
+                    userCutOffLowerBound: 0,
+                    userCutOffUpperBound: 0,
+                    enableModelingInsights: false,
+                    useFeaturesInModel: false,
+                    modelingFeatureList: 'string',
+                    allowColdItemPlacement: false,
+                    enableFeatureCorrelation: true,
+                    reasoningFeatureList: 'string',
+                    enableU2I: true
+                }
+            }   
+        }
+    }
 
     rp(options).then((response) => {
         res.setHeader('Content-Type', 'application/json');
