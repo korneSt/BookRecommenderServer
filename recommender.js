@@ -68,7 +68,23 @@ export const getItemRecommendation = (req, res) => {
 
     rp(options).then((response) => {
         res.setHeader('Content-Type', 'application/json');
-        res.send(response)
+        let respTab = [];
+        let resp = JSON.parse(response);
+
+        (async function loop() {
+            for(var i in resp.recommendedItems ){
+                console.log(resp.recommendedItems[i].items[0].id);
+                await new Promise(resolve => db.getBookById(resp.recommendedItems[i].items[0].id)
+                .then( function(result) {
+                    console.log('result 1', result);
+                    respTab.push(result);
+                    resolve();
+                })
+            );     
+            }                       
+            res.send(respTab)            
+        })();
+
     }).catch((err) => {
         console.log(err);
     });
