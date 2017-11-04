@@ -77,7 +77,8 @@ export const getItemRecommendation = (req, res) => {
                 await new Promise(resolve => db.getBookById(resp.recommendedItems[i].items[0].id)
                 .then( function(result) {
                     console.log('result 1', result);
-                    respTab.push(result);
+                    if (result !== undefined)
+                        respTab.push(result);   
                     resolve();
                 })
             );     

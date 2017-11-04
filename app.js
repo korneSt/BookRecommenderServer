@@ -36,6 +36,7 @@ app.use('/', index);
 app.use('/users', users);
 
 //API
+app.post('/api/v1.0/login', db.login);
 app.get('/api/v1.0/c', db.addUser);
 app.post('/api/v1.0/model', recommender.createModel);
 app.get('/api/v1.0/recommendationUser', recommender.getUserRecommendation);
