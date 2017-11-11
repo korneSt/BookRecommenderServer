@@ -2,18 +2,52 @@ var Sequelize = require('sequelize');
 
 import * as db from './config'
 let sequelize = db.sequelize;
+const Op = Sequelize.Op;
+
 let User = sequelize.define('user', {
   username: Sequelize.STRING,
-  password: Sequelize.STRING
+  password: Sequelize.STRING,
 });
+let Parameter = sequelize.define('parameter', {
+  name: Sequelize.STRING,
+  value: Sequelize.STRING
 
+});
+  let UserParameters = sequelize.define('userparameters', {
+    id: {
+      type: Sequelize.INTEGER,
+      autoIncrement: true,
+      primaryKey: true
+    },
+    userId: {
+      type: Sequelize.INTEGER,
+      references: {
+        model: User,
+        key: 'id'
+      }
+    },
+    parameterId: {
+      type: Sequelize.INTEGER,
+      references: {
+        model: Parameter,
+        key: 'id'
+      }
+    }
+  })
 let Book = sequelize.define('book', {
   title: Sequelize.STRING,
   author: Sequelize.STRING,
   isbn: Sequelize.STRING,
-  rating: Sequelize.FLOAT,
   cover: Sequelize.STRING,
-  recommended: Sequelize.BOOLEAN
+  genre: Sequelize.STRING,
+  age: Sequelize.STRING,
+  length: Sequelize.STRING,
+  style: Sequelize.STRING,
+  mood: Sequelize.STRING,
+  avRating: Sequelize.FLOAT,
+  createdAt: Sequelize.DATE,
+  updatedAt: Sequelize.DATE
+
   // userId: {
   //   type: Sequelize.INTEGER,
 
@@ -27,6 +61,61 @@ let Book = sequelize.define('book', {
   //   }
   // }
 });
+
+let UserBookRating = sequelize.define('userbookrating', {
+  userId: {
+    type: Sequelize.INTEGER,
+    references: {
+      model: User,
+      key: 'id'
+    }
+  }, 
+  bookId: {
+    type: Sequelize.INTEGER,
+    references: {
+      model: Book,
+      key: 'id'
+    }
+  }, 
+  rating: Sequelize.INTEGER,
+  recommended: Sequelize.BOOLEAN
+})
+
+let BookRecommendation = sequelize.define('bookrecommendation', {
+  baseBookId: {
+    type: Sequelize.INTEGER,
+    references: {
+      model: Book,
+      key: 'id'
+    }
+  },
+  recommendedBookId: {
+    type: Sequelize.INTEGER,
+    references: {
+      model: Book,
+      key: 'id'
+    }
+  },
+  reasoning: Sequelize.STRING,
+  rating: Sequelize.FLOAT
+})
+
+let UserRecommendation = sequelize.define('userrecomendation', {
+  userId: {
+    type: Sequelize.INTEGER,
+    references: {
+      model: User,
+      key: 'id'
+    }
+  },
+  recommendedBookId: {
+    type: Sequelize.INTEGER,
+    references: {
+      model: Book,
+      key: 'id'
+    }
+  }
+})
 
 let Recommendation = sequelize.define('recommendation', {
   recommendedBookId: {
@@ -76,11 +165,13 @@ let Category = sequelize.define('category', {
 // })
 
 
-Book.belongsToMany(Category, { through: 'BookCategory' })
-Category.belongsToMany(Book, { through: 'BookCategory' })
+// Book.belongsToMany(Category, { through: 'BookCategory' })
+// Category.belongsToMany(Book, { through: 'BookCategory' })
 
 Book.belongsToMany(User, {through: 'UserBook'});
 User.belongsToMany(Book, {through: 'UserBook'});
+Parameter.belongsToMany(User, {as: 'parameter', through: UserParameters, foreignKey: 'parameterId'});
+User.belongsToMany(Parameter, {as: 'user', through: UserParameters, foreignKey: 'userId'});
 // User.hasMany(Book);
 // Book.belongsTo(User);
 
@@ -122,6 +213,80 @@ export const addRecommendation = (options, response) => {
   // })
 }
 
+export const test = (req, res) => {
+  sequelize.sync().then(() => {
+    // User.belongsToMany
+
+    sequelize.query(
+    `
+    SELECT userparameters.id, parameters.name, parameters.value, userparameters.userId FROM parameters
+    LEFT JOIN userparameters ON userparameters.parameterId = parameters.id WHERE userparameters.userId = 1
+    UNION 
+    SELECT 'false', parameters.name, parameters.value, 'false' FROM parameters
+    `)
+    .spread((results, metadata) => {
+      console.log(results);
+      // Results will be an empty array and metadata will contain the number of affected rows.
+    })
+
+    UserParameters.findAll({
+      include: [
+        {model: User, as: 'user' },
+        {model: Parameter, as: 'parameter'}
+      ]
+    //   {where: {
+    //   userId: 1
+    // },
+    //   include: [User, Parameter
+          // , {
+          //   model: Book,
+          //   as: 'baseBook'
+          // }, {
+          //   model: Book,
+          //   as: 'recommendedBook'
+          // }
+        // ]
+    }
+  ).then( (params) => {
+      res.send(params);
+    }, (error) => {
+      res.send(error);
+    })
+    
+  });
+}
+
+export const getAllParameters1 = (req, res) => {
+  
+  Parameter.findAll().then( (params) => {
+    res.send(params);
+  }, (error) => {
+    res.send(error);
+  })
+}
+
+export const getAllParameters = (req, res) => {
+  // Parameter.findAll({where: {
+  //   userId
+  // }})
+  // .then( (params) => {
+  //   res.send(params);
+  // }, (error) => {
+  //   res.send(error);
+  // })
+  sequelize.query(
+    `
+    SELECT userparameters.id, parameters.name, parameters.value, userparameters.userId FROM parameters
+    LEFT JOIN userparameters ON userparameters.parameterId = parameters.id WHERE userparameters.userId = 1
+    UNION 
+    SELECT 'false', parameters.name, parameters.value, 'false' FROM parameters
+    `)
+    .spread((results, metadata) => {
+      console.log(results);
+      res.send(results);
+    })
+}
+
 export const login = (req, res) => {  
   sequelize.sync().then(() => {
     console.log('body', req.body);
@@ -155,7 +320,7 @@ export const addNewBook = (req, res) => {
       recommended: req.body.recommended
     }
   })
-  .spread(function (b, created) {
+  .spread(function (b, createdBook) {
       console.log(b.get({
         plain: true
       }))
@@ -169,7 +334,8 @@ export const addNewBook = (req, res) => {
           plain: true
         }))
         b.addCategories([c])
-        res.sendStatus(200);
+        b.dataValues.created = createdBook;
+        res.send(b);
       })
     })
   })
@@ -195,6 +361,40 @@ export const addBook = (book) => {
   // })
 }
 
+export const getBooksByDate = () => {
+  
+  var today = new Date();
+  var dd = today.getDate()-1;
+  var mm = today.getMonth()+1;
+  var yyyy = today.getFullYear();
+  
+  if(dd<10) {
+      dd = '0'+dd
+  } 
+  
+  if(mm<10) {
+      mm = '0'+mm
+  } 
+  today = yyyy + '-' + mm + '-' + dd;
+
+  return Book.findAll({where: {
+    createdAt: {
+    [Op.gt]: today
+  }
+  }, include: [
+    { model: Category}
+ ]}).then((books) => {
+  //  return books;
+   return(books);
+
+    // books.map((el) => {
+    //   console.log(el.get({
+    //     plain: true
+    //   }))
+    // })
+  })
+}
+
 export const getBooksDB = (req, res) => {
   let mappedBooks = [];
   sequelize.sync().then(() => {
@@ -215,7 +415,7 @@ export const getBooksDB = (req, res) => {
 
 export const getUserBooks = (req, res) => {
   let mappedBooks = [];
-  sequelize.sync().then(() => {
+  // sequelize.sync().then(() => {
     Book.findAll({
       where: {
         userId: req.params.id
@@ -231,8 +431,10 @@ export const getUserBooks = (req, res) => {
       console.log(mappedBooks.length);
       res.send(mappedBooks);
     })
-  })
+  // })
 }
+
+
 
 export const getBookById = (bookId) => {
   // sequelize.sync().then(function () {

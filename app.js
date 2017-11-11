@@ -45,6 +45,8 @@ app.get('/api/v1.0/books', db.getBooksDB);
 app.get('/api/v1.0/books/:id', db.getUserBooks);
 app.post('/api/v1.0/book', db.addNewBook);
 
+app.get('/api/v1.0/settings', db.getAllParameters);
+
 app.post('/api/v1.0/model', recommender.createModel);
 app.get('/api/v1.0/recommendationUser', recommender.getUserRecommendation);
 app.get('/api/v1.0/recommendationItem', recommender.getItemRecommendation);
@@ -53,7 +55,8 @@ app.post('/api/v1.0/postCatalogFile', recommender.postCatalogFile);
 app.patch('/api/v1.0/updateCatalogFile', recommender.updateCatalogFile);
 app.post('/api/v1.0/triggerBuild', recommender.triggerBuild);
 
-// app.get('/api/v1.0/test', db.test);
+app.get('/api/v1.0/test', db.test);
+app.get('/api/v1.0/createFile', recommender.createCatalogFile);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');

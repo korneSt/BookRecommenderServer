@@ -3,6 +3,9 @@ const URL = 'https://westus.api.cognitive.microsoft.com/recommendations/v4.0/mod
 const rp = require('request-promise');
 const modelId = 'e78d6041-6d30-44c4-855c-dc4760acab79';
 const fs = require('fs');
+var Sequelize = require('sequelize');
+
+const Op = Sequelize.Op
 
 import * as db from './db'
 
@@ -255,5 +258,42 @@ export const getBooks = (req, res) => {
         // db.addBook()
     }).catch((err) => {
         console.log(err);
+    });
+}
+
+export const createCatalogFile = (req, res) => {
+
+    // (async function loop() {
+    //         await new Promise(resolve => db.getBooksByDate()
+    //         .then( function(result) {
+    //             console.log('result 1', result); 
+    //             resolve();
+    //         }).catch (function(err) {
+    //             console.log(err);
+    //         })
+    //     );     
+    // })();
+
+    // async function getB() {
+    //     let books = await db.getBooksByDate();
+    //     return books;
+    // }
+
+    // getB().then(res => {
+    //     console.log('return', res);
+    // }, (err) => {
+    //     console.log(err);
+    // })
+ 
+    db.getBooksByDate().then( (res) => {
+        console.log('return', res);
+        
+    }).catch( (err) => {
+        
+    });
+    fs.writeFile('./catalog_files/catalog.txt', 'test1', (err) => {
+        if (err) throw err;
+        console.log('zapisano plik');
+        res.sendStatus(200);
     });
 }
