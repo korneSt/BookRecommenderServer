@@ -41,7 +41,7 @@ let Book = sequelize.define('book', {
   cover: Sequelize.STRING,
   genre: Sequelize.STRING,
   age: Sequelize.STRING,
-  length: Sequelize.STRING,
+  bookLen: Sequelize.STRING,
   style: Sequelize.STRING,
   mood: Sequelize.STRING,
   avRating: Sequelize.FLOAT,
@@ -214,7 +214,8 @@ export const addRecommendation = (options, response) => {
 }
 
 export const test = (req, res) => {
-  sequelize.sync().then(() => {
+  sequelize.sync({Book});
+  // sequelize.sync().then(() => {
     // User.belongsToMany
 
     sequelize.query(
@@ -253,7 +254,7 @@ export const test = (req, res) => {
       res.send(error);
     })
     
-  });
+  // });
 }
 
 export const getAllParameters1 = (req, res) => {
@@ -379,13 +380,11 @@ export const getBooksByDate = () => {
 
   return Book.findAll({where: {
     createdAt: {
-    [Op.gt]: today
+    [Op.lt]: today
   }
-  }, include: [
-    { model: Category}
- ]}).then((books) => {
+  }}).then((books) => {
   //  return books;
-   return(books);
+   return books;
 
     // books.map((el) => {
     //   console.log(el.get({

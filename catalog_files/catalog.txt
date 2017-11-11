@@ -1,1 +1,10 @@
-test1
+1,Pan Tadeusz,book,,genre=dramat
+2,Diuna,book,,genre=fantastyka
+3,Lolita,book,,genre=dramat
+4,Solaris,book,,genre=fantastyka
+5,Starcie Królów,book,,genre=fantasy
+6,Gniazdo Światów,book,,genre=fantasy
+7,Limes inferior,book,,genre=fantastyka
+8,Hyperion,book,,genre=fantasy
+9,Marsjanin,book,,genre=dramat
+10,Nowy Wspaniały Świat,book,,genre=antyutopia

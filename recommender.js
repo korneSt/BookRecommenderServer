@@ -261,39 +261,33 @@ export const getBooks = (req, res) => {
     });
 }
 
+/*
+* Creates catalof file with returned books from database
+* File format: <Item Id>,<Item Name>,<Item Category>,<Features list>
+* Feature list: genre, age range, length, style, mood
+*/
 export const createCatalogFile = (req, res) => {
-
-    // (async function loop() {
-    //         await new Promise(resolve => db.getBooksByDate()
-    //         .then( function(result) {
-    //             console.log('result 1', result); 
-    //             resolve();
-    //         }).catch (function(err) {
-    //             console.log(err);
-    //         })
-    //     );     
-    // })();
-
-    // async function getB() {
-    //     let books = await db.getBooksByDate();
-    //     return books;
-    // }
-
-    // getB().then(res => {
-    //     console.log('return', res);
-    // }, (err) => {
-    //     console.log(err);
-    // })
- 
-    db.getBooksByDate().then( (res) => {
-        console.log('return', res);
-        
-    }).catch( (err) => {
-        
-    });
-    fs.writeFile('./catalog_files/catalog.txt', 'test1', (err) => {
+    let lines = '';
+    db.getBooksByDate().then( (resp) => {
+        console.log('return', resp.length);
+        for (let i=0; i < resp.length; i++) {
+            console.log('a', resp[i].genre);
+            let line = '';
+            let genre = resp[i].genre !== null ? 'genre=' + resp[i].genre : '';
+            let age = resp[i].age !== null ? ',age=' + resp[i].age : '';
+            let length = resp[i].bookLen !== null ? ',length=' + resp[i].bookLen : '';
+            let style = resp[i].style !== null ? ',style=' + resp[i].style : '';
+            let mood = resp[i].mood !== null ? resp[i].mood : '';
+            line = resp[i].id + ',' + resp[i].title + ',book,,' + genre + age + length + style + mood + '\n';
+            lines += line; 
+        }
+        fs.writeFile('./catalog_files/catalog.txt', lines, (err) => {
         if (err) throw err;
         console.log('zapisano plik');
         res.sendStatus(200);
     });
+    }).catch( (err) => {
+        res.send(err);
+    });
+
 }
