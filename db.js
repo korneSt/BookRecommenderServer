@@ -47,22 +47,9 @@ let Book = sequelize.define('book', {
   avRating: Sequelize.FLOAT,
   createdAt: Sequelize.DATE,
   updatedAt: Sequelize.DATE
-
-  // userId: {
-  //   type: Sequelize.INTEGER,
-
-  //   references: {
-  //     // This is a reference to another model
-  //     model: User,
-
-  //     // This is the column name of the referenced model
-  //     key: 'id',
-
-  //   }
-  // }
 });
 
-let UserBookRating = sequelize.define('userbookrating', {
+let UserBookRating = sequelize.define('userbookratings', {
   userId: {
     type: Sequelize.INTEGER,
     references: {
@@ -168,14 +155,23 @@ let Category = sequelize.define('category', {
 // Book.belongsToMany(Category, { through: 'BookCategory' })
 // Category.belongsToMany(Book, { through: 'BookCategory' })
 
-Book.belongsToMany(User, {through: 'UserBook'});
-User.belongsToMany(Book, {through: 'UserBook'});
+//tutaj nazwa w through musi sie zgadać z nazwa tabeli (case sensitive)
+Book.belongsToMany(User, {through: 'userbookratings'});
+User.belongsToMany(Book, {through: 'userbookratings'});
 Parameter.belongsToMany(User, {as: 'parameter', through: UserParameters, foreignKey: 'parameterId'});
 User.belongsToMany(Parameter, {as: 'user', through: UserParameters, foreignKey: 'userId'});
 // User.hasMany(Book);
 // Book.belongsTo(User);
 
+//add baseBookId to table BookRecommendation
+BookRecommendation.belongsTo(Book, { as: 'baseBook', foreignKey: 'baseBookId'});
+BookRecommendation.belongsTo(Book, { as: 'recBook', foreignKey: 'recBookId'});
+
+UserRecommendation.belongsTo(User, { as: 'user', foreignKey: 'userId'});
+UserRecommendation.belongsTo(Book, { as: 'book', foreignKey: 'bookId'});
+
 // Book.hasMany(Recommendation);
+//TODO sprawdzic czy nie potrzebna
 Recommendation.belongsTo(User);
 Recommendation.belongsTo(Book, { as: 'baseBook', foreignKey: 'baseBookId' });
 Recommendation.belongsTo(Book, { as: 'recommendedBook', foreignKey: 'recommendedBookId' });
@@ -212,50 +208,59 @@ export const addRecommendation = (options, response) => {
   //   })
   // })
 }
-
+let loggedUser = 3;
 export const test = (req, res) => {
-  sequelize.sync({Book});
-  // sequelize.sync().then(() => {
-    // User.belongsToMany
-
-    sequelize.query(
-    `
-    SELECT userparameters.id, parameters.name, parameters.value, userparameters.userId FROM parameters
-    LEFT JOIN userparameters ON userparameters.parameterId = parameters.id WHERE userparameters.userId = 1
-    UNION 
-    SELECT 'false', parameters.name, parameters.value, 'false' FROM parameters
-    `)
-    .spread((results, metadata) => {
-      console.log(results);
-      // Results will be an empty array and metadata will contain the number of affected rows.
+  console.log(loggedUser);
+  // sequelize.sync();
+  sequelize.sync().then(() => {
+    Book.findOrCreate({
+      where: { title: 'test' }, defaults: {
+        author: 'test',
+        title: 'test'
+      }
     })
-
-    UserParameters.findAll({
-      include: [
-        {model: User, as: 'user' },
-        {model: Parameter, as: 'parameter'}
-      ]
-    //   {where: {
-    //   userId: 1
-    // },
-    //   include: [User, Parameter
-          // , {
-          //   model: Book,
-          //   as: 'baseBook'
-          // }, {
-          //   model: Book,
-          //   as: 'recommendedBook'
-          // }
-        // ]
-    }
-  ).then( (params) => {
-      res.send(params);
-    }, (error) => {
-      res.send(error);
-    })
+    .spread(function (b, createdBook) {
+        console.log(b.get({
+          plain: true
+        }))
+        User.findOne({where: {id: 1}}).then( (user) => {
+          // loggedUser = user;
+            user.getBooks().then((result) => {
+              res.send(result)
+            })
+          // user.addBook(b, {through: {rating: 5, recommended: true}});
+        });
+          // b.dataValues.created = createdBook;
+          // res.send(b);
+        })
+      })
+  }
+    
+  //   UserParameters.findAll({
+  //     include: [
+  //       {model: User, as: 'user' },
+  //       {model: Parameter, as: 'parameter'}
+  //     ]
+  //   //   {where: {
+  //   //   userId: 1
+  //   // },
+  //   //   include: [User, Parameter
+  //         // , {
+  //         //   model: Book,
+  //         //   as: 'baseBook'
+  //         // }, {
+  //         //   model: Book,
+  //         //   as: 'recommendedBook'
+  //         // }
+  //       // ]
+  //   }
+  // ).then( (params) => {
+  //     res.send(params);
+  //   }, (error) => {
+  //     res.send(error);
+  //   })
     
   // });
-}
 
 export const getAllParameters1 = (req, res) => {
   
@@ -299,7 +304,7 @@ export const login = (req, res) => {
     }).then((user) => {
       if (user !== null) {
         let id = user.get('id')
-        
+        loggedUser = user;
         res.status(200).send({userId: id})
       } else {
         res.sendStatus(304);
@@ -325,20 +330,10 @@ export const addNewBook = (req, res) => {
       console.log(b.get({
         plain: true
       }))
-      Category.findOrCreate({
-        where: { name: "Powiesc" }, defaults: {            
-        name: 'Powiesc'
-      }
-      })
-      .spread(function (c, created) {
-        console.log(c.get({
-          plain: true
-        }))
-        b.addCategories([c])
+
         b.dataValues.created = createdBook;
         res.send(b);
       })
-    })
   })
 }
 
@@ -411,25 +406,30 @@ export const getBooksDB = (req, res) => {
   })
 
 }
-
+//TODO naprawic, bo zmienilem tabele books i teraz nie przechowuje userId, uzyc userBookRating
 export const getUserBooks = (req, res) => {
   let mappedBooks = [];
   // sequelize.sync().then(() => {
-    Book.findAll({
-      where: {
-        userId: req.params.id
-      }
-    }).then((books) => {
-      books.map((el) => {
-        mappedBooks.push(el.get({
-          plain: true
-        }))
+    User.findOne({where: {id: req.params.id}}).then( (user) => {
+      user.getBooks().then( (books) => {
+        res.send(books);
       });
-      // res.send(books);
-    }).then((books) => {
-      console.log(mappedBooks.length);
-      res.send(mappedBooks);
-    })
+    });
+    // Book.findAll({
+    //   where: {
+    //     userId: req.params.id
+    //   }
+    // }).then((books) => {
+    //   books.map((el) => {
+    //     mappedBooks.push(el.get({
+    //       plain: true
+    //     }))
+    //   });
+    //   // res.send(books);
+    // }).then((books) => {
+    //   console.log(mappedBooks.length);
+    //   res.send(mappedBooks);
+    // })
   // })
 }
 

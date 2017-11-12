@@ -94,6 +94,12 @@ export const getItemRecommendation = (req, res) => {
     });
 }
 
+/*
+* Posts file with usage data from database
+* Format: <User Id>,<Item Id>,<Time>,[<Event type>]
+* Event must be RecommendationClick
+*/
+
 export const postUsageFile = (req, res) => {
     let options = {
         method: 'POST',
@@ -107,65 +113,6 @@ export const postUsageFile = (req, res) => {
             file: {
                 value: fs.createReadStream('./usage_files/usage.txt'),
                 options: {
-                    // filename: 'test.txt',
-                    // contentType: 'image/jpg'
-                }
-            }
-        },
-    };
-
-    rp(options).then((response) => {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(response)
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-
-export const postCatalogFile = (req, res) => {
-    let options = {
-        method: 'POST',
-        url: URL + modelId + '/catalog',
-         resolveWithFullResponse: true,
-        qs: { catalogDisplayName: req.query.catalogDisplayName },
-        headers:
-        {
-            'ocp-apim-subscription-key': '0b4ff4feea1b469e9e1c787feac92ba1',
-            'content-Type': 'application/octet-stream'
-        },
-        form: {},
-        formData: {
-            file: {
-                value: fs.createReadStream('./catalog_files/catalog.txt'),
-                 options: {
-                    // filename: 'test.txt',
-                    contentType: 'text/plain'
-                }
-            }
-        },
-    };
-
-    rp(options).then((response) => {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(response)
-    }).catch((err) => {
-        console.log(err);
-    });
-}
-
-export const updateCatalogFile = (req, res) => {
-    let options = {
-        method: 'PATCH',
-        url: URL + modelId + '/catalog',
-        qs: { catalogDisplayName: req.query.catalogDisplayName },
-        headers:
-        {
-            'ocp-apim-subscription-key': '0b4ff4feea1b469e9e1c787feac92ba1'
-        },
-        formData: {
-            file: {
-                value: fs.createReadStream('./catalog_files/catalog.txt'),
-                 options: {
                     // filename: 'test.txt',
                     // contentType: 'image/jpg'
                 }
@@ -262,7 +209,7 @@ export const getBooks = (req, res) => {
 }
 
 /*
-* Creates catalof file with returned books from database
+* Creates catalog file with returned books from database
 * File format: <Item Id>,<Item Name>,<Item Category>,<Features list>
 * Feature list: genre, age range, length, style, mood
 */
@@ -290,4 +237,64 @@ export const createCatalogFile = (req, res) => {
         res.send(err);
     });
 
+}
+
+
+export const postCatalogFile = (req, res) => {
+    let options = {
+        method: 'POST',
+        url: URL + modelId + '/catalog',
+         resolveWithFullResponse: true,
+        qs: { catalogDisplayName: req.query.catalogDisplayName },
+        headers:
+        {
+            'ocp-apim-subscription-key': '0b4ff4feea1b469e9e1c787feac92ba1',
+            'content-Type': 'application/octet-stream'
+        },
+        form: {},
+        formData: {
+            file: {
+                value: fs.createReadStream('./catalog_files/catalog.txt'),
+                 options: {
+                    // filename: 'test.txt',
+                    contentType: 'text/plain'
+                }
+            }
+        },
+    };
+
+    rp(options).then((response) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(response)
+    }).catch((err) => {
+        console.log(err);
+    });
+}
+
+export const updateCatalogFile = (req, res) => {
+    let options = {
+        method: 'PATCH',
+        url: URL + modelId + '/catalog',
+        qs: { catalogDisplayName: req.query.catalogDisplayName },
+        headers:
+        {
+            'ocp-apim-subscription-key': '0b4ff4feea1b469e9e1c787feac92ba1'
+        },
+        formData: {
+            file: {
+                value: fs.createReadStream('./catalog_files/catalog.txt'),
+                 options: {
+                    // filename: 'test.txt',
+                    // contentType: 'image/jpg'
+                }
+            }
+        },
+    };
+
+    rp(options).then((response) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(response)
+    }).catch((err) => {
+        console.log(err);
+    });
 }
